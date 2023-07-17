@@ -21,6 +21,21 @@
 
 extern bool g_running;
 
+class Message
+{
+public:
+	Message() = default;
+	Message(std::string acommand, std::string acontent);
+	void set_command(std::string acommand);
+	void set_content(std::string acontent);
+	const char *get_command();
+	const char *get_content();
+
+private:
+	std::string command = "";
+	std::string content = "";
+};
+
 class Protocol
 {
 public:
