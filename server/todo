@@ -1,0 +1,16 @@
+TODO
+-git
+- refactoring where to put the next three functions. read onlisten goes in the readingfdset select, write goes in the writingfgse select and update goes in between.
+- client.read(): this function is adding in the message queue a Message instance
+- server.update(): this function loop over each client and process message depending on the command. It will forward a chat message or build a list message or update the name of the client.
+					It will build message and put them in the client sending queue.
+- server.write(): Process each client and send the message in queue when the socket is ready.
+
+How to transfer message
+write a function that loop over client and check what to do depending on the command and message.
+If there is
+
+ What command do we need:
+  - name: This command define the client's name
+  - list: This command ask for a list of other client.
+  - chat: This command tell the server that this packet is a message for another client;
