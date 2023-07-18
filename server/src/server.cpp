@@ -71,77 +71,14 @@ void Server::on_serve()
 	}
 }
 
-void Server::add_client()
+void Server::init_fdsets()
 {
-	int	sock;
-
-	sock = accept(main_socket, (struct sockaddr *) NULL, NULL);
-	to_non_blocking(sock);
-	Client new_client(sock, current_id);
-	current_id++;
-	clients.push_back(new_client);
-}
-
-void Server::on_listen()
-{
-	int retvalue;
-
-	for(Client a_client : clients)
+	FD_ZERO(&read_sockets);
+	FD_SET(main_socket, &read_sockets);
+	for (Client aclient : clients)
 	{
-		if (FD_ISSET(a_client.get_sock(), &read_sockets))
-		{
-			retvalue = a_client.onread();
-			if (retvalue == CLOSING_CONNEXION)
-				delete_client(a_client);
-			else if (retvalue == FAILED)
-				std::cerr << "Problem while reading socket " << a_client.get_sock() << std::endl;
-		}
-	}
-}
-
-void Server::delete_client(Client aclient)
-{
-	close(aclient.get_sock());
-	for (auto oneclient = clients.begin(); oneclient != clients.end(); ++oneclient)
-	{
-		if ((*oneclient).get_sock() == (*oneclient).get_sock())
-		{
-			std::cout << "Removing client socket " << (*oneclient).get_address() << std::endl;
-			clients.erase(oneclient);
-			break;
-		}
-	}
-}
-
-void Server::on_process_message()
-{
-	for (auto aclient : clients)
-	{
-		if (!aclient.reading_queue.empty())
-		{
-			Message amessage = aclient.reading_queue.front();
-			aclient.reading_queue.pop();
-			switch (amessage.get_command())
-			{
-				case CHAT: std::cout << "Chat" << std::endl;
-						   break;
-				case NAME: std::cout << "Name" << std::endl;
-						   break;
-				case LIST: std::cout << "List" << std::endl;
-						   break;
-				default:
-						   break;
-			}
-		}
-	}
-}
-
-void Server::on_write()
-{
-	for(Client a_client : clients)
-	{
-		if (FD_ISSET(a_client.get_sock(), &write_sockets))
-			a_client.write();
+		FD_SET(aclient.get_sock(), &read_sockets);
+		FD_SET(aclient.get_sock(), &write_sockets);
 	}
 }
 
@@ -157,22 +94,92 @@ int	Server::get_highest_sock_number()
 	return (temp + 1);
 }
 
-void Server::init_fdsets()
+
+void Server::add_client()
 {
-	FD_ZERO(&read_sockets);
-	FD_SET(main_socket, &read_sockets);
-	for (Client aclient : clients)
+	int	sock;
+
+	sock = accept(main_socket, (struct sockaddr *) NULL, NULL);
+	to_non_blocking(sock);
+	Client new_client(sock, current_id);
+	current_id++;
+	clients.push_back(new_client);
+}
+
+void Server::on_listen()
+{
+	int retvalue;
+
+	if (clients.size() > 0)
 	{
-		FD_SET(aclient.get_sock(), &read_sockets);
-		FD_SET(aclient.get_sock(), &write_sockets);
+		for (auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
+		{
+			if (FD_ISSET((*a_client).get_sock(), &read_sockets))
+			{
+				retvalue = (*a_client).onread();
+				if (retvalue == FAILED)
+					std::cerr << "Problem while reading socket " << std::endl;
+				else if (retvalue == CLOSING_CONNEXION)
+					delete_client((*a_client).get_sock());
+			}
+		}
+	}
+}
+
+void Server::delete_client(int sock)
+{
+	close(sock);
+	for (auto oneclient = clients.begin(); oneclient != clients.end(); ++oneclient)
+	{
+		if ((*oneclient).get_sock() == sock)
+		{
+			std::cout << "Removing client socket " << (*oneclient).get_address() << std::endl;
+			clients.erase(oneclient);
+			break;
+		}
+	}
+}
+
+void Server::on_process_message()
+{
+	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
+	{
+		while (!(*aclient).reading_queue.empty())
+		{
+			Message amessage = (*aclient).reading_queue.front();
+			switch (amessage.get_command())
+			{
+				case CHAT: std::cout << "Chat" << std::endl;
+						   break;
+				case NAME: std::cout << "Name" << std::endl;
+						   break;
+				case LIST: std::cout << "List" << std::endl;
+						   break;
+				default:
+						   break;
+			}
+			(*aclient).reading_queue.pop();
+		}
+	}
+}
+
+void Server::on_write()
+{
+	for(Client a_client : clients)
+	{
+		if (FD_ISSET(a_client.get_sock(), &write_sockets))
+			a_client.write();
 	}
 }
 
 void Server::on_cleanup()
 {
-	for (auto aclient : clients)
-		close(aclient.get_sock());
-	clients.clear();
+	if (!clients.empty())
+	{
+		for (auto aclient : clients)
+			close(aclient.get_sock());
+		clients.clear();
+	}
 	if (!shutdown(main_socket, SHUT_RDWR))
 		std::cout << "Shutdown successed." << std::endl;
 	else

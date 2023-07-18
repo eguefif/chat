@@ -22,6 +22,7 @@
 #define CHAT 0
 #define NAME 1
 #define LIST 2
+#define ENDCONN 3
 
 extern bool g_running;
 
@@ -36,8 +37,8 @@ public:
 	const char *get_content();
 
 private:
-	const char *command;
-	const char *content;
+	std::string command;
+	std:: string content;
 };
 
 class Protocol
@@ -69,6 +70,7 @@ public:
 	int onread();
 	void write();
 	const char *get_address();
+	int get_id();
 	std::queue<Message> reading_queue;
 
 private:
@@ -105,7 +107,7 @@ private:
 	void on_write();
 	void add_client();
 	void on_cleanup();
-	void delete_client(Client aclient);
+	void delete_client(int sock);
 	static void check_running(int signal);
 	int	get_highest_sock_number();
 	void init_fdsets();

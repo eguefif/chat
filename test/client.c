@@ -8,6 +8,7 @@
 #define MAX 500
 
 void run(char address[], int port);
+void send_message(char std[], int socketclient);
 
 int main(int argc, char *argv[])
 {
@@ -23,23 +24,10 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
-void trim(char str[])
-{
-	int c = 0;
-
-	while (str[c] != '\0')
-	{
-		if (str[c] == '\n')
-			str[c] = '\0';
-		c++;
-	}
-}
-
 void run(char address[], int port)
 {
 	int socketClient;
 	struct sockaddr_in addressClient;
-	char message[MAX] = "";
 
 	socketClient = socket(AF_INET, SOCK_STREAM, 0);
 	addressClient.sin_family = AF_INET;
@@ -48,8 +36,18 @@ void run(char address[], int port)
 	memset(addressClient.sin_zero, '\0', sizeof(addressClient.sin_zero));
 	connect(socketClient, (struct sockaddr *) &addressClient, sizeof(addressClient));
 
-	memset(message, 0, sizeof(message));
-	strcpy(message, "")
-	send(socketClient, message, strlen(message), 0);
+	send_message("00012nameEmmanuel", socketClient);
+	send_message("00003EOF", socketClient);
+
 	close(socketClient);
 }
+
+void send_message(char str[], int socketclient)
+{
+	char message[MAX] = "";
+
+	memset(message, 0, MAX);
+	strcpy(message, str);
+	send(socketclient, message, strlen(message), 0);
+}
+	

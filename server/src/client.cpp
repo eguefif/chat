@@ -25,11 +25,14 @@ int Client::onread()
 	int retvalue;
 
 	retvalue = communication.onread();
-	if (retvalue == CLOSING_CONNEXION)
-		return (CLOSING_CONNEXION);
-	else if(retvalue == FAILED)
+	if(retvalue == FAILED)
 		return (FAILED);
 	Message amessage(communication.get_command(), communication.get_content());
+	if (amessage.get_command() == ENDCONN)
+	{
+		std::cout << "Received end of connexion for client (" << addr << ")" << std::endl;
+		return (CLOSING_CONNEXION);
+	}
 	reading_queue.push(amessage);
 	return (SUCCESS);
 }
@@ -40,4 +43,9 @@ void Client::write()
 const char *Client::get_address()
 {
 	return (addr.c_str());
+}
+
+int Client::get_id()
+{
+	return (id);
 }

@@ -3,8 +3,7 @@
 Message::Message(const char *acommand, const char *acontent) :
 	command(acommand),
 	content(acontent)
-{
-}
+{}
 
 void Message::set_command(const char *acommand)
 {
@@ -18,16 +17,18 @@ void Message::set_content(const char *acontent)
 
 int Message::get_command()
 {
-	if (strcmp(command, "chat"))
+	if (command == "chat")
 		return CHAT;
-	else if (strcmp(command, "name"))
+	else if (command == "name")
 		return NAME;
-	else if (strcmp(command, "list"))
+	else if (command == "list")
 		return LIST;
+	else if (command == "EOF")
+		return ENDCONN;
 	return FAILED;
 }
 
 const char *Message::get_content()
 {
-	return (content);
+	return (content.c_str());
 }
