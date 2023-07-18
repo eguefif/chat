@@ -46,7 +46,7 @@ const char *Protocol::get_command()
 	return command.c_str();
 }
 
-const char *Protocol::get_message()
+const char *Protocol::get_content()
 {
 	return message.c_str();
 }

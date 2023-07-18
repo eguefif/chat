@@ -12,12 +12,16 @@
 #include <csignal>
 #include <vector>
 #include <unistd.h>
+#include <queue>
 #define COMMAND_SIZE 4 
 #define PROTOHEADER_SIZE 5
 #define MAX_MESSAGE 10000
 #define CLOSING_CONNEXION 0
 #define SUCCESS 1
 #define FAILED -1
+#define CHAT 0
+#define NAME 1
+#define LIST 2
 
 extern bool g_running;
 
@@ -25,15 +29,15 @@ class Message
 {
 public:
 	Message() = default;
-	Message(std::string acommand, std::string acontent);
-	void set_command(std::string acommand);
-	void set_content(std::string acontent);
-	const char *get_command();
+	Message(const char *acommand, const char *acontent);
+	void set_command(const char *acommand);
+	void set_content(const char *acontent);
+	int get_command();
 	const char *get_content();
 
 private:
-	std::string command = "";
-	std::string content = "";
+	const char *command;
+	const char *content;
 };
 
 class Protocol
@@ -44,7 +48,7 @@ public:
 	int onread();
 	void write();
 	const char *get_command();
-	const char *get_message();
+	const char *get_content();
 
 private:
 	int sock;
@@ -65,6 +69,7 @@ public:
 	int onread();
 	void write();
 	const char *get_address();
+	std::queue<Message> reading_queue;
 
 private:
 	int sock;
@@ -96,7 +101,7 @@ private:
 	void on_init();
 	void on_serve();
 	void on_listen();
-	void on_transfer_message();
+	void on_process_message();
 	void on_write();
 	void add_client();
 	void on_cleanup();

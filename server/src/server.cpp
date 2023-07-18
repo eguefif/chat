@@ -65,7 +65,7 @@ void Server::on_serve()
 				add_client();
 			}
 			on_listen();
-			on_transfer_message();
+			on_process_message();
 			on_write();
 		}
 	}
@@ -113,8 +113,28 @@ void Server::delete_client(Client aclient)
 	}
 }
 
-void Server::on_transfer_message()
-{}
+void Server::on_process_message()
+{
+	for (auto aclient : clients)
+	{
+		if (!aclient.reading_queue.empty())
+		{
+			Message amessage = aclient.reading_queue.front();
+			aclient.reading_queue.pop();
+			switch (amessage.get_command())
+			{
+				case CHAT: std::cout << "Chat" << std::endl;
+						   break;
+				case NAME: std::cout << "Name" << std::endl;
+						   break;
+				case LIST: std::cout << "List" << std::endl;
+						   break;
+				default:
+						   break;
+			}
+		}
+	}
+}
 
 void Server::on_write()
 {
@@ -150,6 +170,9 @@ void Server::init_fdsets()
 
 void Server::on_cleanup()
 {
+	for (auto aclient : clients)
+		close(aclient.get_sock());
+	clients.clear();
 	if (!shutdown(main_socket, SHUT_RDWR))
 		std::cout << "Shutdown successed." << std::endl;
 	else

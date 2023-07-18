@@ -21,16 +21,16 @@ int Client::get_sock()
 
 int Client::onread()
 {
-	Protocol message(get_sock());
+	Protocol communication(get_sock());
 	int retvalue;
 
-	retvalue = message.onread();
+	retvalue = communication.onread();
 	if (retvalue == CLOSING_CONNEXION)
 		return (CLOSING_CONNEXION);
 	else if(retvalue == FAILED)
 		return (FAILED);
-	std::cout << "Command: " << message.get_command() << std::endl;
-	std::cout << "Message: " << message.get_message() << std::endl;
+	Message amessage(communication.get_command(), communication.get_content());
+	reading_queue.push(amessage);
 	return (SUCCESS);
 }
 
