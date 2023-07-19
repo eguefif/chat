@@ -125,18 +125,9 @@ void Server::on_listen()
 
 void Server::delete_client(std::vector<Client>::iterator aclient)
 {
+	std::cout << "Deleting client : " << aclient->get_name().c_str() << std::endl;
 	close((*aclient).get_sock());
 	(*aclient).set_sock(TODELETE);
-	/*
-	for (auto oneclient = clients.begin(); oneclient != clients.end(); ++oneclient)
-	{
-		if ((*oneclient).get_sock() == sock)
-		{
-			std::cout << "Removing client socket " << (*oneclient).get_address() << std::endl;
-			break;
-		}
-	}
-	*/
 }
 
 void Server::on_process_message()
@@ -148,11 +139,11 @@ void Server::on_process_message()
 			Message amessage = (*aclient).reading_queue.front();
 			switch (amessage.get_command())
 			{
-				case CHAT: std::cout << "Chat" << std::endl;
+				case CHAT: process_chat(aclient);
 						   break;
-				case NAME: std::cout << "Name" << std::endl;
+				case NAME: process_name(aclient);
 						   break;
-				case LIST: std::cout << "List" << std::endl;
+				case LIST: process_list(aclient);
 						   break;
 				default:
 						   break;
@@ -162,12 +153,42 @@ void Server::on_process_message()
 	}
 }
 
+void Server::process_name(std::vector<Client>::iterator aclient)
+{
+	Message amessage;
+
+	amessage = aclient->reading_queue.front();
+	aclient->set_name(amessage.get_content());
+}
+
+void Server::process_list(std::vector<Client>::iterator aclient)
+{
+	std::string content = "list";
+	char protoheader[PROTOHEADER_SIZE];
+	int size;
+
+	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
+		content = content + aclient->get_name();
+	size = content.size();
+	sprintf(protoheader, "%05d", size);
+	content = protoheader + content;
+	Message message("list", content);
+	aclient->writing_queue.push(message);
+}
+
+void Server::process_chat(std::vector<Client>::iterator aclient)
+{
+}
+
 void Server::on_write()
 {
 	for(Client a_client : clients)
 	{
 		if (FD_ISSET(a_client.get_sock(), &write_sockets))
+		{
+			std::cout << "sock number: " << a_client.get_sock() << std::endl;
 			a_client.write();
+		}
 	}
 }
 

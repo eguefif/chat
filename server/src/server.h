@@ -32,14 +32,18 @@ class Message
 public:
 	Message() = default;
 	Message(const char *acommand, const char *acontent);
+	Message(const char *acommand, std::string acontent);
 	void set_command(const char *acommand);
 	void set_content(const char *acontent);
 	int get_command();
+	size_t get_size();
 	const char *get_content();
+	bool is_send();
 
 private:
 	std::string command;
 	std:: string content;
+	bool sent = false;
 };
 
 class Protocol
@@ -73,7 +77,10 @@ public:
 	const char *get_address();
 	int get_id();
 	void set_sock(int asock);
+	std::string get_name();
+	void set_name(std::string aname);
 	std::queue<Message> reading_queue;
+	std::queue<Message> writing_queue;
 
 private:
 	int sock;
@@ -109,6 +116,9 @@ private:
 	void on_write();
 	void add_client();
 	void on_cleanup();
+	void process_list(std::vector<Client>::iterator aclient);
+	void process_chat(std::vector<Client>::iterator aclient);
+	void process_name(std::vector<Client>::iterator aclient);
 	void delete_client(std::vector<Client>::iterator aclient);
 	static void check_running(int signal);
 	int	get_highest_sock_number();
