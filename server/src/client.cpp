@@ -12,6 +12,7 @@ Client::Client(int a_sock, int an_id) :
 	addr = inet_ntop(AF_INET, &(s_addr.sin_addr), dst, INET_ADDRSTRLEN);
 	addr = inet_ntop(AF_INET, &(s_addr.sin_addr), dst, INET_ADDRSTRLEN);
 	std::cout << "New client " << addr.c_str() << std::endl;
+	name = "Unknown";
 }
 
 int Client::get_sock()
@@ -38,7 +39,16 @@ int Client::onread()
 }
 
 void Client::write()
-{}
+{
+	//std::cout << "Begining the loop for client message number: " << writing_queue.size() << std::endl;
+	while (!writing_queue.empty())
+	{
+		auto message = writing_queue.front();
+		std::cout << "Sending to " << name << " : \n" << message.get_content() << std::endl;
+		int ret = send(sock, message.get_content(), message.get_size(), 0);
+		writing_queue.pop();
+	}
+}
 
 const char *Client::get_address()
 {
@@ -53,4 +63,14 @@ int Client::get_id()
 void Client::set_sock(int asock)
 {
 	sock = asock;
+}
+
+std::string Client::get_name()
+{
+	return name;
+}
+
+void Client::set_name(std::string aname)
+{
+	name = aname;
 }

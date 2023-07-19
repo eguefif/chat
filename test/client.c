@@ -7,6 +7,7 @@
 #include <unistd.h>
 #define MAX 500
 
+void process_message(int sock);
 void run(char address[], int port);
 void send_message(char std[], int socketclient);
 
@@ -37,6 +38,9 @@ void run(char address[], int port)
 	connect(socketClient, (struct sockaddr *) &addressClient, sizeof(addressClient));
 
 	send_message("00012nameEmmanuel", socketClient);
+	send_message("00004list", socketClient);
+	process_message(socketClient);
+	send_message("00036chatAlfred              Salut Alfred", socketClient);
 	send_message("00003EOC", socketClient);
 
 	close(socketClient);
@@ -50,4 +54,24 @@ void send_message(char str[], int socketclient)
 	strcpy(message, str);
 	send(socketclient, message, strlen(message), 0);
 }
-	
+
+void process_message(int sock)
+{
+	char protoheader[10];
+	char content[500];
+	int size;
+
+	read(sock, protoheader, 5);
+	size = atoi(protoheader);
+	read(sock, content, size);
+	printf("List of user: \n");
+	for (size_t i=4; i < strlen(content); i++)
+	{
+		if (content[i] == '\0')
+			break;
+		else if(content[i] == ' ')
+			printf(" ");
+		printf("%c", content[i]);
+	}
+	printf("\n");
+}
