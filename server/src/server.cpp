@@ -54,10 +54,7 @@ void Server::on_serve()
 				&write_sockets,
 				NULL, &tv);
 		if (retval == -1)
-		{
 			std::cerr << "Impossible to use select" << std::endl;
-			exit(-1);
-		}
 		else if (retval > 0)
 		{
 			if (FD_ISSET(main_socket, &read_sockets))
@@ -120,24 +117,26 @@ void Server::on_listen()
 				if (retvalue == FAILED)
 					std::cerr << "Problem while reading socket " << std::endl;
 				else if (retvalue == CLOSING_CONNEXION)
-					delete_client((*a_client).get_sock());
+					delete_client(a_client);
 			}
 		}
 	}
 }
 
-void Server::delete_client(int sock)
+void Server::delete_client(std::vector<Client>::iterator aclient)
 {
-	close(sock);
+	close((*aclient).get_sock());
+	(*aclient).set_sock(TODELETE);
+	/*
 	for (auto oneclient = clients.begin(); oneclient != clients.end(); ++oneclient)
 	{
 		if ((*oneclient).get_sock() == sock)
 		{
 			std::cout << "Removing client socket " << (*oneclient).get_address() << std::endl;
-			clients.erase(oneclient);
 			break;
 		}
 	}
+	*/
 }
 
 void Server::on_process_message()

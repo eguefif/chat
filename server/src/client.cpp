@@ -49,3 +49,8 @@ int Client::get_id()
 {
 	return (id);
 }
+
+void Client::set_sock(int asock)
+{
+	sock = asock;
+}

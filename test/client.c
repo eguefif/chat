@@ -37,7 +37,7 @@ void run(char address[], int port)
 	connect(socketClient, (struct sockaddr *) &addressClient, sizeof(addressClient));
 
 	send_message("00012nameEmmanuel", socketClient);
-	send_message("00003EOF", socketClient);
+	send_message("00003EOC", socketClient);
 
 	close(socketClient);
 }

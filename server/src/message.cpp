@@ -23,7 +23,7 @@ int Message::get_command()
 		return NAME;
 	else if (command == "list")
 		return LIST;
-	else if (command == "EOF")
+	else if (command == "EOC")
 		return ENDCONN;
 	return FAILED;
 }

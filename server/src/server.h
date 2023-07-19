@@ -23,6 +23,7 @@
 #define NAME 1
 #define LIST 2
 #define ENDCONN 3
+#define TODELETE -1
 
 extern bool g_running;
 
@@ -71,6 +72,7 @@ public:
 	void write();
 	const char *get_address();
 	int get_id();
+	void set_sock(int asock);
 	std::queue<Message> reading_queue;
 
 private:
@@ -107,7 +109,7 @@ private:
 	void on_write();
 	void add_client();
 	void on_cleanup();
-	void delete_client(int sock);
+	void delete_client(std::vector<Client>::iterator aclient);
 	static void check_running(int signal);
 	int	get_highest_sock_number();
 	void init_fdsets();
