@@ -50,7 +50,6 @@ void run(char address[], int port)
 	send_message("00012nameAlfred", sock2);
 	send_message("00012nameEmmanuel", socketClient);
 	printf("\nTest list\n");
-	send_message("00012nameAlfred", sock2);
 	send_message("00004list", sock2);
 	process_message(sock2);
 	printf("Test chat\n");

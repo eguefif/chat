@@ -56,11 +56,10 @@ void Server::on_serve()
 		if (retval > 0)
 		{
 			if (FD_ISSET(main_socket, &read_sockets))
-			{
 				add_client();
-			}
 			on_listen();
 			on_process_message();
+			update_clients();
 			on_write();
 		}
 	}
@@ -72,8 +71,11 @@ void Server::init_fdsets()
 	FD_SET(main_socket, &read_sockets);
 	for (Client aclient : clients)
 	{
-		FD_SET(aclient.get_sock(), &read_sockets);
-		FD_SET(aclient.get_sock(), &write_sockets);
+		if (aclient.get_sock() > 0)
+		{
+			FD_SET(aclient.get_sock(), &read_sockets);
+			FD_SET(aclient.get_sock(), &write_sockets);
+		}
 	}
 }
 
@@ -122,6 +124,7 @@ void Server::on_listen()
 void Server::delete_client(std::vector<Client>::iterator aclient)
 {
 	std::cout << "Deleting client : " << aclient->get_name().c_str() << std::endl;
+	std::cout << "Socket " << aclient->get_sock() << std::endl;
 	close(aclient->get_sock());
 	aclient->set_sock(TODELETE);
 }
@@ -197,6 +200,22 @@ void Server::on_write()
 	{
 		if (FD_ISSET(a_client->get_sock(), &write_sockets))
 			a_client->write();
+	}
+}
+
+void Server::update_clients()
+{
+	auto client = clients.begin();
+
+	while (client != clients.end())
+	{
+		if (client->get_sock() < 0)
+		{
+			std::cout << "Removing " << client->get_name() << std::endl;
+			clients.erase(client);
+		}
+		else
+			++client;
 	}
 }
 

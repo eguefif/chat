@@ -124,6 +124,7 @@ private:
 	void on_write();
 	void add_client();
 	void on_cleanup();
+	void update_clients();
 	void process_list(std::vector<Client>::iterator aclient);
 	void process_chat(std::vector<Client>::iterator aclient);
 	void process_name(std::vector<Client>::iterator aclient);

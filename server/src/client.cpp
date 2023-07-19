@@ -11,7 +11,7 @@ Client::Client(int a_sock, int an_id) :
 			(socklen_t *) sizeof(s_addr));
 	addr = inet_ntop(AF_INET, &(s_addr.sin_addr), dst, INET_ADDRSTRLEN);
 	addr = inet_ntop(AF_INET, &(s_addr.sin_addr), dst, INET_ADDRSTRLEN);
-	std::cout << "New client " << addr.c_str() << std::endl;
+	std::cout << "New client " << addr.c_str() << "(" << sock << ")" << std::endl;
 	name = "Unknown";
 }
 
@@ -31,6 +31,7 @@ int Client::onread()
 		return (FAILED);
 	amessage = communication.get_message();
 	reading_queue.push(amessage);
+	std::cout << "Receiving message " << amessage.get_message() << std::endl;
 	return (SUCCESS);
 }
 
