@@ -126,17 +126,17 @@ void Server::on_listen()
 void Server::delete_client(std::vector<Client>::iterator aclient)
 {
 	std::cout << "Deleting client : " << aclient->get_name().c_str() << std::endl;
-	close((*aclient).get_sock());
-	(*aclient).set_sock(TODELETE);
+	close(aclient->get_sock());
+	aclient->set_sock(TODELETE);
 }
 
 void Server::on_process_message()
 {
 	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
 	{
-		while (!(*aclient).reading_queue.empty())
+		while (!aclient->reading_queue.empty())
 		{
-			Message amessage = (*aclient).reading_queue.front();
+			Message amessage = aclient->reading_queue.front();
 			switch (amessage.get_command())
 			{
 				case CHAT: process_chat(aclient);
@@ -148,7 +148,7 @@ void Server::on_process_message()
 				default:
 						   break;
 			}
-			(*aclient).reading_queue.pop();
+			aclient->reading_queue.pop();
 		}
 	}
 }
@@ -182,13 +182,10 @@ void Server::process_chat(std::vector<Client>::iterator aclient)
 
 void Server::on_write()
 {
-	for(Client a_client : clients)
+	for(auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
 	{
-		if (FD_ISSET(a_client.get_sock(), &write_sockets))
-		{
-			std::cout << "sock number: " << a_client.get_sock() << std::endl;
-			a_client.write();
-		}
+		if (FD_ISSET(a_client->get_sock(), &write_sockets))
+			a_client->write();
 	}
 }
 

@@ -40,20 +40,12 @@ int Client::onread()
 
 void Client::write()
 {
+	//std::cout << "Begining the loop for client message number: " << writing_queue.size() << std::endl;
 	while (!writing_queue.empty())
 	{
 		auto message = writing_queue.front();
-		std::cout << "sending to " << name << " this: " << message.get_content() << std::endl;
-		if (send(sock, message.get_content(), message.get_size(), 0) != -1)
-		{
-			writing_queue.pop();
-			std::cout << "poping message now" << writing_queue.size () <<std::endl;
-		}
-		else
-		{
-			std::cerr << "Impossible to send message to " << name << "(" << addr << ")" << std::endl;
-			std::cerr << "Content: \n" << message.get_content() << std::endl;
-		}
+		int ret = send(sock, message.get_content(), message.get_size(), 0);
+		writing_queue.pop();
 	}
 }
 
