@@ -10,8 +10,8 @@ Message::Message(std::string acommand, std::string acontent, const char *asrc)
 	src = asrc;
 	size += command.size();
 	size += content.size();
-	size += src.size();
-	sprintf(amessage, "%05d%s%-20s%s", size, command.c_str(), src.c_str(), content.c_str());
+	size += NAME_SIZE;
+	sprintf(amessage, "%05d%s%-*s%s", size, command.c_str(), NAME_SIZE, src.c_str(), content.c_str());
 	message = amessage;
 }
 
@@ -34,7 +34,7 @@ Message::Message(std::string amessage)
 	command = message.substr(0, 4);
 	if (command == "chat")
 	{
-		dst = trim(message.substr(4, 20));
+		dst = trim(message.substr(4, NAME_SIZE));
 		content = trim(message.substr(24, message.size() - 24));
 	}
 	else if (command == "name")

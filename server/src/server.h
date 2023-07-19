@@ -16,6 +16,7 @@
 #define COMMAND_SIZE 4 
 #define PROTOHEADER_SIZE 5
 #define MAX_MESSAGE 10000
+#define NAME_SIZE 20
 #define CLOSING_CONNEXION 0
 #define SUCCESS 1
 #define FAILED -1

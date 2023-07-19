@@ -28,7 +28,7 @@ int Protocol::onread()
 
 void Protocol::write()
 {
-	std::cout << message.get_message() << std::endl;
+	std::cout << "Sending: " << message.get_message() << std::endl;
 	send(sock, message.get_message(), message.get_message_size(), 0);
 }
 

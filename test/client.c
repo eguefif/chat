@@ -90,7 +90,10 @@ void process_message(int sock)
 		if (content[i] == '\0')
 			break;
 		else if(content[i] == ' ')
+		{
 			printf("\n");
+			i++;
+		}
 		printf("%c", content[i]);
 	}
 	printf("\n");
@@ -102,6 +105,7 @@ void process_message2(int sock)
 	char content[500];
 	int size;
 
+	memset(content, '\0', 500);
 	printf("Reading answer to chat:\n");
 	read(sock, protoheader, 5);
 	size = atoi(protoheader);
@@ -110,7 +114,7 @@ void process_message2(int sock)
 	for (size_t i = 4; i < 20; i++)
 	{
 		if (content[i] == ' ')
-				break;
+			break;
 		printf("%c", content[i]);
 	}
 	printf(": ");

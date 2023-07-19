@@ -53,8 +53,6 @@ void Server::on_serve()
 				&read_sockets,
 				&write_sockets,
 				NULL, &tv);
-		//if (retval == -1)
-		//	std::cerr << "Impossible to use select" << std::endl;
 		if (retval > 0)
 		{
 			if (FD_ISSET(main_socket, &read_sockets))
