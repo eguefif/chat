@@ -24,28 +24,23 @@ int Client::onread()
 {
 	Protocol communication(get_sock());
 	int retvalue;
+	Message amessage;
 
 	retvalue = communication.onread();
 	if(retvalue == FAILED)
 		return (FAILED);
-	Message amessage(communication.get_command(), communication.get_content());
-	if (amessage.get_command() == ENDCONN)
-	{
-		std::cout << "Received end of connexion for client (" << addr << ")" << std::endl;
-		return (CLOSING_CONNEXION);
-	}
+	amessage = communication.get_message();
 	reading_queue.push(amessage);
 	return (SUCCESS);
 }
 
 void Client::write()
 {
-	//std::cout << "Begining the loop for client message number: " << writing_queue.size() << std::endl;
 	while (!writing_queue.empty())
 	{
 		auto message = writing_queue.front();
-		std::cout << "Sending to " << name << " : \n" << message.get_content() << std::endl;
-		int ret = send(sock, message.get_content(), message.get_size(), 0);
+		Protocol connexion(sock, message);
+		connexion.write();
 		writing_queue.pop();
 	}
 }
@@ -67,7 +62,7 @@ void Client::set_sock(int asock)
 
 std::string Client::get_name()
 {
-	return name;
+	return (name);
 }
 
 void Client::set_name(std::string aname)

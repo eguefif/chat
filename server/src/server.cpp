@@ -53,9 +53,9 @@ void Server::on_serve()
 				&read_sockets,
 				&write_sockets,
 				NULL, &tv);
-		if (retval == -1)
-			std::cerr << "Impossible to use select" << std::endl;
-		else if (retval > 0)
+		//if (retval == -1)
+		//	std::cerr << "Impossible to use select" << std::endl;
+		if (retval > 0)
 		{
 			if (FD_ISSET(main_socket, &read_sockets))
 			{
@@ -111,13 +111,11 @@ void Server::on_listen()
 	{
 		for (auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
 		{
-			if (FD_ISSET((*a_client).get_sock(), &read_sockets))
+			if (FD_ISSET(a_client->get_sock(), &read_sockets))
 			{
-				retvalue = (*a_client).onread();
+				retvalue = a_client->onread();
 				if (retvalue == FAILED)
 					std::cerr << "Problem while reading socket " << std::endl;
-				else if (retvalue == CLOSING_CONNEXION)
-					delete_client(a_client);
 			}
 		}
 	}
@@ -145,6 +143,8 @@ void Server::on_process_message()
 						   break;
 				case LIST: process_list(aclient);
 						   break;
+				case EOC: delete_client(aclient);
+						  break;
 				default:
 						   break;
 			}
@@ -159,49 +159,35 @@ void Server::process_name(std::vector<Client>::iterator aclient)
 
 	amessage = aclient->reading_queue.front();
 	aclient->set_name(trim(amessage.get_content()));
+	std::cout << "Adding " << aclient->get_name() << std::endl;
 }
 
 void Server::process_list(std::vector<Client>::iterator aclient)
 {
-	std::string content = "list";
-	char protoheader[PROTOHEADER_SIZE];
+std::string content = "";
 	int size;
 
 	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
-		content = content + aclient->get_name();
-	size = content.size();
-	sprintf(protoheader, "%05d", size);
-	content = protoheader + content;
+		if (aclient->get_sock() > 0)
+			content = content + aclient->get_name() + " ";
 	Message message("list", content);
 	aclient->writing_queue.push(message);
 }
 
 void Server::process_chat(std::vector<Client>::iterator aclient)
 {
-	std::string dst;
-	std::string content;
-	std::string chat_message;
-	char dst_message[MAX_MESSAGE];
-	int			chat_size;
-	int	size;
 	Message src_message;
 
 	src_message = aclient->reading_queue.front();
-	content = src_message.get_content();
-	dst = content.substr(0, DST_SIZE);
-	dst = trim(dst);
-	chat_size = content.size() - DST_SIZE;
-	chat_message = content.substr(DST_SIZE, chat_size);
-	size = 4 + (int) aclient->get_name().size() + (int) chat_message.size();
-	sprintf(dst_message, "%05dchat%s%s", size, aclient->get_name().c_str(), chat_message.c_str());
-	Message message("chat", dst_message);
-
-	for (auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
+	Message dst_message(src_message.get_command_verbose(),
+			src_message.get_content(),
+			aclient->get_name().c_str());
+	for (auto dst_client = clients.begin(); dst_client != clients.end(); ++dst_client)
 	{
-		if (a_client->get_name() == dst.c_str())
+		if (dst_client->get_name() == src_message.get_dst().c_str())
 		{
-			std::cout << "Adding message to " << a_client->get_name() << std::endl;
-			a_client->writing_queue.push(message);
+			std::cout << "Adding message to " << dst_client->get_name() << std::endl;
+			dst_client->writing_queue.push(dst_message);
 			break;
 		}
 	}

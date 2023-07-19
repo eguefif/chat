@@ -22,7 +22,7 @@
 #define CHAT 0
 #define NAME 1
 #define LIST 2
-#define ENDCONN 3
+#define EOC 3
 #define TODELETE -1
 #define DST_SIZE 20
 
@@ -32,18 +32,26 @@ class Message
 {
 public:
 	Message() = default;
-	Message(const char *acommand, const char *acontent);
-	Message(const char *acommand, std::string acontent);
+	Message(std::string acommand, std::string acontent, const char *asrc);
+	Message(std::string acommand, std::string acontent);
+	Message(std::string message);
 	void set_command(const char *acommand);
 	void set_content(const char *acontent);
 	int get_command();
-	size_t get_size();
+	size_t get_content_size();
+	size_t get_message_size();
 	const char *get_content();
+	const char *get_message();
+	std::string get_command_verbose();
+	std::string get_dst();
 	bool is_send();
 
 private:
 	std::string command;
-	std:: string content;
+	std::string content;
+	std::string message;
+	std::string dst;
+	std::string src;
 	bool sent = false;
 };
 
@@ -52,19 +60,17 @@ class Protocol
 public:
 	Protocol() = default;
 	Protocol(int asocket);
+	Protocol(int asocket, Message amessage);
 	int onread();
 	void write();
-	const char *get_command();
-	const char *get_content();
+	Message get_message();
 
 private:
 	int sock;
 	int message_size;
-	std::string command;
-	std::string message;
-
-	void save_command(char temp[]);
-	void save_message(char temp[]);
+	char protoheader[PROTOHEADER_SIZE];
+	char temp_message[MAX_MESSAGE];
+	Message message;
 };
 
 
@@ -73,9 +79,9 @@ class Client
 public:
 	Client(int a_sock, int an_id);
 	int get_sock();
+	const char *get_address();
 	int onread();
 	void write();
-	const char *get_address();
 	int get_id();
 	void set_sock(int asock);
 	std::string get_name();
