@@ -57,9 +57,8 @@ void run(char address[], int port)
 	process_message2(sock2);
 	printf("\nTest end of connexion\n");
 	send_message("00003EOC", socketClient);
-	send_message("00003EOC", sock2);
-
 	close(socketClient);
+	send_message("00003EOC", sock2);
 	close(sock2);
 }
 
