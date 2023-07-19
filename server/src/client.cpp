@@ -44,6 +44,7 @@ void Client::write()
 	while (!writing_queue.empty())
 	{
 		auto message = writing_queue.front();
+		std::cout << "Sending to " << name << " : \n" << message.get_content() << std::endl;
 		int ret = send(sock, message.get_content(), message.get_size(), 0);
 		writing_queue.pop();
 	}

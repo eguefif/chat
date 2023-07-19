@@ -40,6 +40,7 @@ void run(char address[], int port)
 	send_message("00012nameEmmanuel", socketClient);
 	send_message("00004list", socketClient);
 	process_message(socketClient);
+	send_message("00036chatAlfred              Salut Alfred", socketClient);
 	send_message("00003EOC", socketClient);
 
 	close(socketClient);

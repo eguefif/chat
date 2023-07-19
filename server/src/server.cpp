@@ -158,7 +158,7 @@ void Server::process_name(std::vector<Client>::iterator aclient)
 	Message amessage;
 
 	amessage = aclient->reading_queue.front();
-	aclient->set_name(amessage.get_content());
+	aclient->set_name(trim(amessage.get_content()));
 }
 
 void Server::process_list(std::vector<Client>::iterator aclient)
@@ -178,6 +178,33 @@ void Server::process_list(std::vector<Client>::iterator aclient)
 
 void Server::process_chat(std::vector<Client>::iterator aclient)
 {
+	std::string dst;
+	std::string content;
+	std::string chat_message;
+	char dst_message[MAX_MESSAGE];
+	int			chat_size;
+	int	size;
+	Message src_message;
+
+	src_message = aclient->reading_queue.front();
+	content = src_message.get_content();
+	dst = content.substr(0, DST_SIZE);
+	dst = trim(dst);
+	chat_size = content.size() - DST_SIZE;
+	chat_message = content.substr(DST_SIZE, chat_size);
+	size = 4 + (int) aclient->get_name().size() + (int) chat_message.size();
+	sprintf(dst_message, "%05dchat%s%s", size, aclient->get_name().c_str(), chat_message.c_str());
+	Message message("chat", dst_message);
+
+	for (auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
+	{
+		if (a_client->get_name() == dst.c_str())
+		{
+			std::cout << "Adding message to " << a_client->get_name() << std::endl;
+			a_client->writing_queue.push(message);
+			break;
+		}
+	}
 }
 
 void Server::on_write()

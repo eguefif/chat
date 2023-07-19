@@ -24,6 +24,7 @@
 #define LIST 2
 #define ENDCONN 3
 #define TODELETE -1
+#define DST_SIZE 20
 
 extern bool g_running;
 
