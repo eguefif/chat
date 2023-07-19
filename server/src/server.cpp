@@ -54,10 +54,7 @@ void Server::on_serve()
 				&write_sockets,
 				NULL, &tv);
 		if (retval == -1)
-		{
 			std::cerr << "Impossible to use select" << std::endl;
-			exit(-1);
-		}
 		else if (retval > 0)
 		{
 			if (FD_ISSET(main_socket, &read_sockets))
@@ -65,11 +62,35 @@ void Server::on_serve()
 				add_client();
 			}
 			on_listen();
-			on_transfer_message();
+			on_process_message();
 			on_write();
 		}
 	}
 }
+
+void Server::init_fdsets()
+{
+	FD_ZERO(&read_sockets);
+	FD_SET(main_socket, &read_sockets);
+	for (Client aclient : clients)
+	{
+		FD_SET(aclient.get_sock(), &read_sockets);
+		FD_SET(aclient.get_sock(), &write_sockets);
+	}
+}
+
+int	Server::get_highest_sock_number()
+{
+	int temp = 0;
+
+	for (Client a_client : clients)
+		if (a_client.get_sock() > temp)
+			temp = a_client.get_sock();
+	if (temp < main_socket)
+		temp = main_socket;
+	return (temp + 1);
+}
+
 
 void Server::add_client()
 {
@@ -86,35 +107,60 @@ void Server::on_listen()
 {
 	int retvalue;
 
-	for(Client a_client : clients)
+	if (clients.size() > 0)
 	{
-		if (FD_ISSET(a_client.get_sock(), &read_sockets))
+		for (auto a_client = clients.begin(); a_client != clients.end(); ++a_client)
 		{
-			retvalue = a_client.onread();
-			if (retvalue == CLOSING_CONNEXION)
-				delete_client(a_client);
-			else if (retvalue == FAILED)
-				std::cerr << "Problem while reading socket " << a_client.get_sock() << std::endl;
+			if (FD_ISSET((*a_client).get_sock(), &read_sockets))
+			{
+				retvalue = (*a_client).onread();
+				if (retvalue == FAILED)
+					std::cerr << "Problem while reading socket " << std::endl;
+				else if (retvalue == CLOSING_CONNEXION)
+					delete_client(a_client);
+			}
 		}
 	}
 }
 
-void Server::delete_client(Client aclient)
+void Server::delete_client(std::vector<Client>::iterator aclient)
 {
-	close(aclient.get_sock());
+	close((*aclient).get_sock());
+	(*aclient).set_sock(TODELETE);
+	/*
 	for (auto oneclient = clients.begin(); oneclient != clients.end(); ++oneclient)
 	{
-		if ((*oneclient).get_sock() == (*oneclient).get_sock())
+		if ((*oneclient).get_sock() == sock)
 		{
 			std::cout << "Removing client socket " << (*oneclient).get_address() << std::endl;
-			clients.erase(oneclient);
 			break;
 		}
 	}
+	*/
 }
 
-void Server::on_transfer_message()
-{}
+void Server::on_process_message()
+{
+	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
+	{
+		while (!(*aclient).reading_queue.empty())
+		{
+			Message amessage = (*aclient).reading_queue.front();
+			switch (amessage.get_command())
+			{
+				case CHAT: std::cout << "Chat" << std::endl;
+						   break;
+				case NAME: std::cout << "Name" << std::endl;
+						   break;
+				case LIST: std::cout << "List" << std::endl;
+						   break;
+				default:
+						   break;
+			}
+			(*aclient).reading_queue.pop();
+		}
+	}
+}
 
 void Server::on_write()
 {
@@ -125,31 +171,14 @@ void Server::on_write()
 	}
 }
 
-int	Server::get_highest_sock_number()
-{
-	int temp = 0;
-
-	for (Client a_client : clients)
-		if (a_client.get_sock() > temp)
-			temp = a_client.get_sock();
-	if (temp < main_socket)
-		temp = main_socket;
-	return (temp + 1);
-}
-
-void Server::init_fdsets()
-{
-	FD_ZERO(&read_sockets);
-	FD_SET(main_socket, &read_sockets);
-	for (Client aclient : clients)
-	{
-		FD_SET(aclient.get_sock(), &read_sockets);
-		FD_SET(aclient.get_sock(), &write_sockets);
-	}
-}
-
 void Server::on_cleanup()
 {
+	if (!clients.empty())
+	{
+		for (auto aclient : clients)
+			close(aclient.get_sock());
+		clients.clear();
+	}
 	if (!shutdown(main_socket, SHUT_RDWR))
 		std::cout << "Shutdown successed." << std::endl;
 	else

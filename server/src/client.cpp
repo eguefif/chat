@@ -21,16 +21,19 @@ int Client::get_sock()
 
 int Client::onread()
 {
-	Protocol message(get_sock());
+	Protocol communication(get_sock());
 	int retvalue;
 
-	retvalue = message.onread();
-	if (retvalue == CLOSING_CONNEXION)
-		return (CLOSING_CONNEXION);
-	else if(retvalue == FAILED)
+	retvalue = communication.onread();
+	if(retvalue == FAILED)
 		return (FAILED);
-	std::cout << "Command: " << message.get_command() << std::endl;
-	std::cout << "Message: " << message.get_message() << std::endl;
+	Message amessage(communication.get_command(), communication.get_content());
+	if (amessage.get_command() == ENDCONN)
+	{
+		std::cout << "Received end of connexion for client (" << addr << ")" << std::endl;
+		return (CLOSING_CONNEXION);
+	}
+	reading_queue.push(amessage);
 	return (SUCCESS);
 }
 
@@ -40,4 +43,14 @@ void Client::write()
 const char *Client::get_address()
 {
 	return (addr.c_str());
+}
+
+int Client::get_id()
+{
+	return (id);
+}
+
+void Client::set_sock(int asock)
+{
+	sock = asock;
 }

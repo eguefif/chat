@@ -1,23 +1,31 @@
 #include "server.h"
 
-Message::Message(std::string acommand, std::string acontent) :
+Message::Message(const char *acommand, const char *acontent) :
 	command(acommand),
 	content(acontent)
 {}
 
-void Message::set_command(std::string acommand)
+void Message::set_command(const char *acommand)
 {
 	command = acommand;
 }
 
-void Message::set_content(std::string acontent)
+void Message::set_content(const char *acontent)
 {
 	content = acontent;
 }
 
-const char *Message::get_command()
+int Message::get_command()
 {
-	return (command.c_str());
+	if (command == "chat")
+		return CHAT;
+	else if (command == "name")
+		return NAME;
+	else if (command == "list")
+		return LIST;
+	else if (command == "EOC")
+		return ENDCONN;
+	return FAILED;
 }
 
 const char *Message::get_content()
