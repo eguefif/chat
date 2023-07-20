@@ -1,9 +1,21 @@
 #include "client.h"
 
-int main()
-{
-	Client client("Emmanuel");
+bool g_running = true;
 
-	std::cout << "Name" << client.get_name() << std::endl;
+int main(int argc, char *argv[])
+{
+	Client client;
+
+	if (argc == 2)
+	{
+		std::cout << "Test\n";
+		client = Client(argv[1]);
+	}
+	else if (argc == 4)
+		client = Client(argv[1], argv[2], atoi(argv[3]));
+
+	client.init();
+	client.run();
+	client.cleanup();
 	return (0);
 }

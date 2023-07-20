@@ -2,7 +2,7 @@ NAME = client
 CC = g++
 RM = rm -f
 
-_SRC = main.cpp client.cpp
+_SRC = main.cpp client.cpp connexion.cpp display.cpp utils.cpp message.cpp
 _OBJ = $(_SRC:.cpp=.o)
 _INC = client.h
 SDIR = ./src/

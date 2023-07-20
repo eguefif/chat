@@ -9,7 +9,7 @@ int Connexion::init()
 {
 	std::string message1 = "Welcome to the chat.";
 	std::string message2 = "Type \\l to get the list of connected users.";
-	std::string message3 = "Type \\q to get the list of connected users.";
+	std::string message3 = "Type \\q to exit.";
 
 	messages.push_back(message1);
 	messages.push_back(message2);

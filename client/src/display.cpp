@@ -7,7 +7,7 @@ int Display::init()
 	tcgetattr(STDIN_FILENO, &orig_termios);
 	raw_config = orig_termios;
 	raw_config.c_lflag &= ~(ECHO | ICANON);
-	raw_config.c_oflag &= ~(OPOST);
+	//raw_config.c_oflag &= ~(OPOST);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw_config);
 	
 	clear_screen();
@@ -19,7 +19,6 @@ int Display::init()
 void Display::clear_screen()
 {
 	buffer += "\x1b[2J";
-	//write(STDOUT_FILENO, "\x1b[2J", 4);
 }
 
 void Display::disablerawmode()
@@ -30,12 +29,12 @@ void Display::disablerawmode()
 void Display::refresh(std::string stdin_buffer, std::vector<std::string> messages)
 {
 	buffer.clear();
-	hide_cursor();
 	clear_screen();
 	update_size();
-	//display_rows();
-	echo_stdin(stdin_buffer);
+	display_rows();
 	display_messages(messages);
+	echo_stdin(stdin_buffer);
+	hide_cursor();
 	print_to_screen();
 	show_cursor();
 }
@@ -72,10 +71,10 @@ void Display::display_messages(std::vector<std::string> messages)
 	std::vector<std::string>::iterator last;
 	char cursor[500];
 
-	first = display_messages.end();
 	if (display_messages.size() > rows - 2)
 	{
-		last = first - (rows - 2);
+		first = display_messages.begin();
+		last = first + (display_messages.size() - (rows - 2));
 		display_messages.erase(first, last);
 	}
 	sprintf(cursor, "\x1b[H");
