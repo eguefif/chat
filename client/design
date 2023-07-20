@@ -1,0 +1,17 @@
+Class connexion:
+- Handle select
+- Read socket and stdin
+- keep a queue with all messages.
+- keep a buffer for stdin
+
+Class display:
+- display messages accordingly to the space on the terminal
+- return to the bottom to chat
+- keep a knowledge of where the typing and message cursor is.
+
+
+class client
+- init connexion
+- keep tracks of messages
+- keep tracks of the messages.
+- call display and connexion
