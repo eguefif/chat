@@ -29,15 +29,24 @@ Then he can talk to someone using /NAME content.
 
 ### Executing program
 
-* In the server directory./server
-* open another terminal and type ./client IP_ADDRESS PORT in the client directory.
+* In the server directory./server IP_ADDRESS PORT
+* open another terminal and type ./client PSEUDO IP_ADDRESS PORT in the client directory.
+
+How to use the client:
+\l: requires the list of connected user.
+\q: quit
+\h: provides the help
+PSEUDO Message
 
 ## Authors
 
 Contributors names and contact info
 
-Emmaunel Guefif
+Emmanuel Guefif
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE.md file for details
+
+## Version
+0.1: Realease version, the server and client basic functionallities work.
