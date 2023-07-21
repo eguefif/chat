@@ -106,6 +106,8 @@ private:
 	void display_messages(std::vector<std::string> messages);
 	void show_cursor();
 	void hide_cursor();
+	void move_cursor_stdin();
+	void move_cursor_message();
 };
 
 class Client

@@ -132,6 +132,7 @@ private:
 	static void check_running(int signal);
 	int	get_highest_sock_number();
 	void init_fdsets();
+	Message build_message_echo(Message src, std::vector<Client>::iterator aclient);
 };
 
 void to_non_blocking(int sock);

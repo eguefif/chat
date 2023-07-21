@@ -104,7 +104,7 @@ void Connexion::update()
 	int retval;
 
 	init_fdsets();
-	retval = select(fd,
+	retval = select(fd + 1,
 			&read_sockets,
 			&write_sockets,
 			NULL, &tv);
@@ -147,7 +147,7 @@ void Connexion::listen()
 		stdin_buffer.push_back(c);
 		new_stdin_entry = true;
 	}
-	else if(FD_ISSET(fd, &read_sockets))
+	if(FD_ISSET(fd, &read_sockets))
 		get_server_message();
 }
 
@@ -157,6 +157,9 @@ void Connexion::get_server_message()
 	char content[MAX_MESSAGE];
 	int size;
 
+
+	memset(content, '\0', MAX_MESSAGE);
+	memset(protoheader, '\0', PROTOHEADER_SIZE);
 	read(fd, protoheader, 5);
 	size = atoi(protoheader);
 	read(fd, content, size);
@@ -181,21 +184,22 @@ void Connexion::process_message(std::string content)
 
 void Connexion::add_list(std::string list)
 {
-	std::string name;
-	int i = 0;
+	std::string name = "";
 
 	messages.push_back("List of connected users");
-	while(list.at(i) != '\0')
+	for(auto c = list.begin(); c != list.end(); ++c)
 	{
-		if (list.at(i) == ' ')
+		if (*c == '\0')
+			break;
+		else if (*c == ' ')
 		{
 			messages.push_back(name);
 			name = "";
 		}
 		else
-			name.push_back(list.at(i));
-		i++;
+			name.push_back(*c);
 	}
+	new_message = true;
 }
 
 void Connexion::add_message_from_socket(std::string message)
@@ -218,7 +222,7 @@ void Connexion::send_message(std::string entry)
 	std::string content;
 
 	limit = entry.find_first_of(" ");
-	dst = entry.substr(0, limit - 1);
+	dst = entry.substr(0, limit);
 	content = entry.substr(limit + 1, entry.size() - limit - 1);
 	Message message(dst, content);
 	sending_queue.push(message);

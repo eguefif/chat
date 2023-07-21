@@ -84,9 +84,13 @@ void Client::process_stdin()
 {
 	if (stdin_buffer.back() == BACKSPACE)
 	{
-		stdin_buffer.pop_back();
-		stdin_buffer.pop_back();
-		connexion.set_stdin_buffer(stdin_buffer);
+		if (stdin_buffer.size() > 1)
+		{
+			stdin_buffer.pop_back();
+			stdin_buffer.pop_back();
+			connexion.set_stdin_buffer(stdin_buffer);
+			is_display = true;
+		}
 	}
 	if (stdin_buffer.back() == ENTRY)
 	{
@@ -96,6 +100,7 @@ void Client::process_stdin()
 		else
 			send_message();
 		connexion.flush_stdin_buffer();
+		stdin_buffer.clear();
 		is_display = true;
 	}
 }
@@ -120,7 +125,6 @@ void Client::send_message()
 	connexion.send_message(stdin_buffer);
 }
 
-
 void Client::display()
 {
 	if (is_display)
@@ -134,6 +138,7 @@ void Client::cleanup()
 {
 	connexion.cleanup();
 	screen.cleanup();
+	std::cout << "Bye bye " << name << std::endl;
 }
 
 void Client::help()

@@ -52,14 +52,11 @@ void Display::show_cursor()
 void Display::echo_stdin(std::string stdin_buffer)
 {
 	char cursor[500];
-	char message[] = "Type what you want to say(/h for help)\r\n";
 
 	x = buffer.size() + 1;
 	y = rows;
-	sprintf(cursor, "\x1b[%d;1H", x);
-	buffer += cursor;
-	sprintf(cursor, "\x1b[%d;1H", y);
-	buffer += cursor;
+	move_cursor_stdin();
+	buffer += "->";
 	buffer += stdin_buffer;
 }
 
@@ -77,8 +74,7 @@ void Display::display_messages(std::vector<std::string> messages)
 		last = first + (display_messages.size() - (rows - 2));
 		display_messages.erase(first, last);
 	}
-	sprintf(cursor, "\x1b[H");
-	buffer += cursor;
+	move_cursor_message();
 	for (auto message : display_messages)
 	{
 		buffer += message.c_str();
@@ -111,15 +107,27 @@ void Display::cleanup()
 void Display::display_rows()
 {
 	buffer += "\x1b[H";
-	for (int y = 0; y < rows; y++)
-	{
-		buffer += "~";
-		if (y < rows - 1)
-			buffer += "\r\n";
-	}
+	for (int y = 0; y < rows - 1; y++)
+		buffer += "~\r\n";
 }
 
 void Display::print_to_screen()
 {
 	write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+}
+
+void Display::move_cursor_stdin()
+{
+	char cursor[10];
+
+	sprintf(cursor, "\x1b[%d;1H", y);
+	buffer += cursor;
+}
+
+void Display::move_cursor_message()
+{
+	char cursor[10];
+
+	sprintf(cursor, "\x1b[H");
+	buffer += cursor;
 }

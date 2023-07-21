@@ -178,11 +178,14 @@ std::string content = "";
 void Server::process_chat(std::vector<Client>::iterator aclient)
 {
 	Message src_message;
+	Message message_echo;
 
 	src_message = aclient->reading_queue.front();
 	Message dst_message(src_message.get_command_verbose(),
 			src_message.get_content(),
 			aclient->get_name().c_str());
+	message_echo = build_message_echo(src_message, aclient);
+	aclient->writing_queue.push(message_echo);
 	for (auto dst_client = clients.begin(); dst_client != clients.end(); ++dst_client)
 	{
 		if (dst_client->get_name() == src_message.get_dst().c_str())
@@ -192,6 +195,16 @@ void Server::process_chat(std::vector<Client>::iterator aclient)
 			break;
 		}
 	}
+}
+
+Message Server::build_message_echo(Message src, std::vector<Client>::iterator aclient)
+{
+	std::string src_name;
+
+	src_name = aclient->get_name() + "(" + src.get_dst().c_str() + ")";
+	Message retval("chat", src.get_content(), src_name.c_str());
+	std::cout << retval.get_message() << std::endl;
+	return (retval);
 }
 
 void Server::on_write()
