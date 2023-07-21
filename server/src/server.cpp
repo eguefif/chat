@@ -123,10 +123,24 @@ void Server::on_listen()
 
 void Server::delete_client(std::vector<Client>::iterator aclient)
 {
+	std::string name;
+
+	name = aclient->get_name();
 	std::cout << "Deleting client : " << aclient->get_name().c_str() << std::endl;
 	std::cout << "Socket " << aclient->get_sock() << std::endl;
 	close(aclient->get_sock());
 	aclient->set_sock(TODELETE);
+	notify_all_client(name);
+}
+
+void Server::notify_all_client(std::string name)
+{
+	std::string content;
+
+	content = name + " has leaved the server.";
+	Message message("chat", content, "server");
+	for (auto client = clients.begin(); client != clients.end(); ++client)
+		client->writing_queue.push(message);
 }
 
 void Server::on_process_message()
@@ -146,6 +160,8 @@ void Server::on_process_message()
 						   break;
 				case EOC: delete_client(aclient);
 						  break;
+				case CHAN: process_chan(aclient);
+						   break;
 				default:
 						   break;
 			}
@@ -206,6 +222,9 @@ Message Server::build_message_echo(Message src, std::vector<Client>::iterator ac
 	std::cout << retval.get_message() << std::endl;
 	return (retval);
 }
+
+void Server::process_chan(std::vector<Client>::iterator aclient)
+{}
 
 void Server::on_write()
 {

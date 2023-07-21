@@ -26,6 +26,7 @@
 #define EOC 3
 #define TODELETE -1
 #define DST_SIZE 20
+#define CHAN 4
 
 extern bool g_running;
 
@@ -129,10 +130,12 @@ private:
 	void process_chat(std::vector<Client>::iterator aclient);
 	void process_name(std::vector<Client>::iterator aclient);
 	void delete_client(std::vector<Client>::iterator aclient);
+	void process_chan(std::vector<Client>::iterator aclient);
 	static void check_running(int signal);
 	int	get_highest_sock_number();
 	void init_fdsets();
 	Message build_message_echo(Message src, std::vector<Client>::iterator aclient);
+	void notify_all_client(std::string name);
 };
 
 void to_non_blocking(int sock);
