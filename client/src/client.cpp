@@ -115,6 +115,14 @@ void Client::check_command()
 				  break;
 		case 'q': g_running = false;
 				  break;
+		case 'c': create_channel();
+				  break;
+		case 'e': exit_channel();
+				  break;
+		case 'j': join_channel();
+				  break;
+		case 'd': delete_channel();
+				  break;
 		default:
 				  break;
 	}
@@ -145,4 +153,44 @@ void Client::help()
 {
 	std::string help = "HELP - \\q : exit the chat, \\l : request list of user, USER message";
 	connexion.add_message(help);
+}
+
+void Client::create_channel()
+{
+	size_t pos;
+
+	pos = stdin_buffer.find_first_of(" ");
+	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
+	Command message("crea", name);
+	connexion.add_message(message.get_message());
+}
+
+void Client::exit_channel()
+{
+	size_t pos;
+
+	pos = stdin_buffer.find_first_of(" ");
+	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
+	Command message("exi", name);
+	connexion.add_message(message.get_message());
+}
+
+void Client::join_channel()
+{
+	size_t pos;
+
+	pos = stdin_buffer.find_first_of(" ");
+	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
+	Command message("join", name);
+	connexion.add_message(message.get_message());
+}
+
+void Client::delete_channel()
+{
+	size_t pos;
+
+	pos = stdin_buffer.find_first_of(" ");
+	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
+	Command message("dele", name);
+	connexion.add_message(message.get_message());
 }

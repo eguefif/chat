@@ -24,11 +24,15 @@
 #define NAME 1
 #define LIST 2
 #define EOC 3
+#define JOIN_CHAN 4
+#define CREATE_CHAN 5
+#define LEAVE_CHAN 6
+#define DELETE_CHAN 7
 #define TODELETE -1
 #define DST_SIZE 20
-#define CHAN 4
 
 extern bool g_running;
+
 
 class Message
 {
@@ -43,6 +47,7 @@ public:
 	size_t get_content_size();
 	size_t get_message_size();
 	const char *get_content();
+	std::string get_content_string();
 	const char *get_message();
 	std::string get_command_verbose();
 	std::string get_dst();
@@ -55,6 +60,22 @@ private:
 	std::string dst;
 	std::string src;
 	bool sent = false;
+	bool is_command();
+};
+
+class Channel
+{
+public:
+	Channel(const char *name, int asock);
+	void add_client(int asock);
+	void remove_client(int asock);
+	void add_message(Message amessage);
+	std::string get_name();
+	std::queue<Message> writing_queue;
+	
+private:
+	std::vector<int> clients;
+	std::string name;
 };
 
 class Protocol
@@ -116,6 +137,7 @@ private:
 	fd_set write_sockets;
 	struct timeval tv;
 	std::vector<Client> clients;
+	std::vector<Channel> channels;
 	int	current_id = 0;
 
 	void on_init();
@@ -129,8 +151,13 @@ private:
 	void process_list(std::vector<Client>::iterator aclient);
 	void process_chat(std::vector<Client>::iterator aclient);
 	void process_name(std::vector<Client>::iterator aclient);
+	void process_leavechan(std::vector<Client>::iterator aclient);
+	void process_joinchan(std::vector<Client>::iterator aclient);
+	void process_createchan(std::vector<Client>::iterator aclient);
+	void process_deletechan(Message message);
+	void add_channel(const char *name, int client);
+	void process_channel_message();
 	void delete_client(std::vector<Client>::iterator aclient);
-	void process_chan(std::vector<Client>::iterator aclient);
 	static void check_running(int signal);
 	int	get_highest_sock_number();
 	void init_fdsets();

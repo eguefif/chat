@@ -8,12 +8,18 @@ Connexion::Connexion(std::string anaddress, int aport) :
 int Connexion::init()
 {
 	std::string message1 = "Welcome to the chat.";
-	std::string message2 = "Type \\l to get the list of connected users.";
-	std::string message3 = "Type \\q to exit.";
+	std::string message2 = "Type \\l to get the list of connected users and channels.";
+	std::string message3 = "Type \\c + name to create a channel.";
+	std::string message4 = "Type \\e + name to exit a channel.";
+	std::string message5 = "Type \\j + name to join a channel.";
+	std::string message6 = "Type \\q to exit.";
 
 	messages.push_back(message1);
 	messages.push_back(message2);
 	messages.push_back(message3);
+	messages.push_back(message4);
+	messages.push_back(message5);
+	messages.push_back(message6);
 
 	init_connexion();
 	return (1);

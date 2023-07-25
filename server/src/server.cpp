@@ -60,6 +60,7 @@ void Server::on_serve()
 			on_listen();
 			on_process_message();
 			update_clients();
+			process_channel_message();
 			on_write();
 		}
 	}
@@ -160,7 +161,13 @@ void Server::on_process_message()
 						   break;
 				case EOC: delete_client(aclient);
 						  break;
-				case CHAN: process_chan(aclient);
+				case JOIN_CHAN: process_joinchan(aclient);
+						   break;
+				case CREATE_CHAN: process_createchan(aclient);
+						   break;
+				case LEAVE_CHAN: process_leavechan(aclient);
+						   break;
+				case DELETE_CHAN: process_deletechan(amessage);
 						   break;
 				default:
 						   break;
@@ -223,8 +230,51 @@ Message Server::build_message_echo(Message src, std::vector<Client>::iterator ac
 	return (retval);
 }
 
-void Server::process_chan(std::vector<Client>::iterator aclient)
-{}
+void Server::process_joinchan(std::vector<Client>::iterator aclient)
+{
+	Message amessage;
+
+	amessage = aclient->reading_queue.front();
+	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
+	{
+		if (achannel->get_name() == amessage.get_content_string())
+			achannel->add_client(aclient->get_sock());
+	}
+}
+
+void Server::process_leavechan(std::vector<Client>::iterator aclient)
+{
+	Message amessage;
+
+	amessage = aclient->reading_queue.front();
+	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
+	{
+		if (achannel->get_name() == amessage.get_content_string())
+			achannel->remove_client(aclient->get_sock());
+	}
+}
+
+void Server::process_createchan(std::vector<Client>::iterator aclient)
+{
+	Message amessage;
+
+	amessage = aclient->reading_queue.front();
+	add_channel(amessage.get_content(), aclient->get_sock());
+}
+
+void Server::process_deletechan(Message message)
+{
+	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
+		if (achannel->get_name() == message.get_content_string())
+			channels.erase(achannel);
+}
+
+void Server::add_channel(const char *name, int client)
+{
+	Channel channel(name, client);
+
+	channels.push_back(channel);
+}
 
 void Server::on_write()
 {
@@ -248,6 +298,20 @@ void Server::update_clients()
 		}
 		else
 			++client;
+	}
+}
+
+void Server::process_channel_message()
+{
+	for (auto channel = channels.begin(); channel != channels.end(); ++channel)
+	{
+		while(channel->writing_queue.empty())
+		{
+			Message amessage = channel->writing_queue.front();
+			channel->writing_queue.pop();
+			for (auto client = clients.begin(); client != clients.end(); ++client)
+				client->writing_queue.push(amessage);
+		}
 	}
 }
 

@@ -35,6 +35,19 @@ private:
 	std::string message;
 };
 
+class Command
+{
+public:
+	Command(std::string acommand, std::string acontent);
+	const char *get_message();
+	size_t get_size();
+
+private:
+	std::string command;
+	std::string content;
+	std::string message;
+};
+
 class Connexion
 {
 public:
@@ -139,6 +152,10 @@ private:
 	void check_command();
 	void send_message();
 	void help();
+	void create_channel();
+	void exit_channel();
+	void join_channel();
+	void delete_channel();
 };
 
 void signal_handler(int signal);
