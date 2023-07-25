@@ -25,24 +25,13 @@ extern bool g_running;
 class Message
 {
 public:
-	Message(std::string adst, std::string acontent);
-	const char *get_message();
-	size_t get_size();
+	Message(std::string acommand, std::string acontent);
+	Message(std::string acommand, std::string adst, std::string acontent);
+	virtual const char * get_message();
+	virtual size_t get_size();
 
 private:
 	std::string dst;
-	std::string content;
-	std::string message;
-};
-
-class Command
-{
-public:
-	Command(std::string acommand, std::string acontent);
-	const char *get_message();
-	size_t get_size();
-
-private:
 	std::string command;
 	std::string content;
 	std::string message;
@@ -63,6 +52,7 @@ public:
 	void set_stdin_buffer(std::string buffer);
 	void update();
 	void send_message(std::string entry);
+	void send_command(std::string command, std::string content);
 	void add_message(std::string message);
 	void cleanup();
 	void request_list();
@@ -156,6 +146,7 @@ private:
 	void exit_channel();
 	void join_channel();
 	void delete_channel();
+	void rename();
 };
 
 void signal_handler(int signal);

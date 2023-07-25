@@ -8,11 +8,12 @@ Connexion::Connexion(std::string anaddress, int aport) :
 int Connexion::init()
 {
 	std::string message1 = "Welcome to the chat.";
-	std::string message2 = "Type \\l to get the list of connected users and channels.";
-	std::string message3 = "Type \\c + name to create a channel.";
-	std::string message4 = "Type \\e + name to exit a channel.";
-	std::string message5 = "Type \\j + name to join a channel.";
-	std::string message6 = "Type \\q to exit.";
+	std::string message2 = "Type \\h help";
+	std::string message3 = "Type \\l to get the list of connected users and channels.";
+	std::string message4 = "Type \\c + name to create a channel.";
+	std::string message5 = "Type \\e + name to exit a channel.";
+	std::string message6 = "Type \\j + name to join a channel.";
+	std::string message7 = "Type \\q to exit.";
 
 	messages.push_back(message1);
 	messages.push_back(message2);
@@ -20,6 +21,7 @@ int Connexion::init()
 	messages.push_back(message4);
 	messages.push_back(message5);
 	messages.push_back(message6);
+	messages.push_back(message7);
 
 	init_connexion();
 	return (1);
@@ -230,7 +232,19 @@ void Connexion::send_message(std::string entry)
 	limit = entry.find_first_of(" ");
 	dst = entry.substr(0, limit);
 	content = entry.substr(limit + 1, entry.size() - limit - 1);
-	Message message(dst, content);
+	Message message("chat", dst, content);
+	sending_queue.push(message);
+}
+
+void Connexion::send_command(std::string command, std::string entry)
+{
+	size_t limit;
+	std::string content;
+
+	limit = entry.find_first_of(" ");
+	content = entry.substr(limit + 1, entry.size() - limit - 1);
+	Message message(command, content);
+	std::cerr << "sending: " << message.get_message() << std::endl;
 	sending_queue.push(message);
 }
 

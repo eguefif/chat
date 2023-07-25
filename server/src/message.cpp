@@ -74,7 +74,7 @@ int Message::get_command()
 		return CREATE_CHAN;
 	else if (command == "join")
 		return JOIN_CHAN;
-	else if (command == "exi")
+	else if (command == "exit")
 		return LEAVE_CHAN;
 	else if (command == "dele")
 		return DELETE_CHAN;

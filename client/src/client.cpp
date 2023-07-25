@@ -123,6 +123,8 @@ void Client::check_command()
 				  break;
 		case 'd': delete_channel();
 				  break;
+		case 'n': rename();
+				  break;
 		default:
 				  break;
 	}
@@ -151,46 +153,47 @@ void Client::cleanup()
 
 void Client::help()
 {
-	std::string help = "HELP - \\q : exit the chat, \\l : request list of user, USER message";
-	connexion.add_message(help);
+	std::string message0 = "Help";
+	std::string message1 = "Type \\l to get the list of connected users and channels.";
+	std::string message2 = "Type \\c + name to create a channel.";
+	std::string message3 = "Type \\e + name to exit a channel.";
+	std::string message4 = "Type \\j + name to join a channel.";
+	std::string message5 = "Type \\q to exit.";
+
+	messages.push_back(message0);
+	messages.push_back(message1);
+	messages.push_back(message2);
+	messages.push_back(message3);
+	messages.push_back(message4);
+	messages.push_back(message5);
 }
 
 void Client::create_channel()
 {
-	size_t pos;
-
-	pos = stdin_buffer.find_first_of(" ");
-	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
-	Command message("crea", name);
-	connexion.add_message(message.get_message());
+	connexion.send_command("crea", stdin_buffer);
 }
 
 void Client::exit_channel()
 {
-	size_t pos;
-
-	pos = stdin_buffer.find_first_of(" ");
-	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
-	Command message("exi", name);
-	connexion.add_message(message.get_message());
+	connexion.send_command("exit", stdin_buffer);
 }
 
 void Client::join_channel()
 {
-	size_t pos;
-
-	pos = stdin_buffer.find_first_of(" ");
-	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
-	Command message("join", name);
-	connexion.add_message(message.get_message());
+	connexion.send_command("join", stdin_buffer);
 }
 
 void Client::delete_channel()
 {
-	size_t pos;
-
-	pos = stdin_buffer.find_first_of(" ");
-	std::string name = stdin_buffer.substr(pos + 1, stdin_buffer.size() - pos - 1);
-	Command message("dele", name);
-	connexion.add_message(message.get_message());
+	connexion.send_command("dele", stdin_buffer);
 }
+
+void Client::rename()
+{
+	size_t limit;
+
+	limit = stdin_buffer.find_first_of(" ");
+	name = stdin_buffer.substr(limit + 1, stdin_buffer.size() - limit -1);
+	connexion.send_name(name);
+}
+

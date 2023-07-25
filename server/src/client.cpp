@@ -13,6 +13,8 @@ Client::Client(int a_sock, int an_id) :
 	addr = inet_ntop(AF_INET, &(s_addr.sin_addr), dst, INET_ADDRSTRLEN);
 	std::cout << "New client " << addr.c_str() << "(" << sock << ")" << std::endl;
 	name = "Unknown";
+	Connexion acommunication(sock);
+	communication = acommunication;
 }
 
 int Client::get_sock()
@@ -22,16 +24,19 @@ int Client::get_sock()
 
 int Client::onread()
 {
-	Protocol communication(get_sock());
 	int retvalue;
 	Message amessage;
 
 	retvalue = communication.onread();
 	if(retvalue == FAILED)
 		return (FAILED);
-	amessage = communication.get_message();
-	reading_queue.push(amessage);
-	std::cout << "Receiving message " << amessage.get_message() << std::endl;
+	if (communication.is_message_ready())
+	{
+		amessage = communication.get_message();
+		reading_queue.push(amessage);
+		std::cout << "Receiving message " << amessage.get_message() << std::endl;
+		communication.reset();
+	}
 	return (SUCCESS);
 }
 
@@ -40,7 +45,7 @@ void Client::write()
 	while (!writing_queue.empty())
 	{
 		auto message = writing_queue.front();
-		Protocol connexion(sock, message);
+		Connexion connexion(sock, message);
 		connexion.write();
 		writing_queue.pop();
 	}

@@ -33,7 +33,6 @@
 
 extern bool g_running;
 
-
 class Message
 {
 public:
@@ -54,9 +53,9 @@ public:
 	bool is_send();
 
 private:
+	std::string message;
 	std::string command;
 	std::string content;
-	std::string message;
 	std::string dst;
 	std::string src;
 	bool sent = false;
@@ -78,22 +77,32 @@ private:
 	std::string name;
 };
 
-class Protocol
+class Connexion
 {
 public:
-	Protocol() = default;
-	Protocol(int asocket);
-	Protocol(int asocket, Message amessage);
+	Connexion() = default;
+	Connexion(int asocket);
+	Connexion(int asocket, Message amessage);
 	int onread();
 	void write();
 	Message get_message();
+	bool is_message_ready();
+	void reset();
 
 private:
 	int sock;
-	int message_size;
+	int message_size = 0;
 	char protoheader[PROTOHEADER_SIZE];
 	char temp_message[MAX_MESSAGE];
 	Message message;
+	size_t protoheader_read = 0;
+	size_t message_read = 0;
+	bool is_protoheader_read();
+	bool is_message_read();
+	bool message_ready;
+	bool is_processing_message();
+	int read_protoheader();
+	int read_message();
 };
 
 
@@ -101,14 +110,15 @@ class Client
 {
 public:
 	Client(int a_sock, int an_id);
+
 	int get_sock();
-	const char *get_address();
-	int onread();
-	void write();
-	int get_id();
 	void set_sock(int asock);
+	const char *get_address();
+	int get_id();
 	std::string get_name();
 	void set_name(std::string aname);
+	int onread();
+	void write();
 	std::queue<Message> reading_queue;
 	std::queue<Message> writing_queue;
 
@@ -118,6 +128,7 @@ private:
 	sockaddr_in s_addr;
 	std::string name;
 	std::string addr;
+	Connexion communication;
 };
 
 
@@ -156,6 +167,7 @@ private:
 	void process_createchan(std::vector<Client>::iterator aclient);
 	void process_deletechan(Message message);
 	void add_channel(const char *name, int client);
+	bool is_message_to_channel(std::string dst);
 	void process_channel_message();
 	void delete_client(std::vector<Client>::iterator aclient);
 	static void check_running(int signal);

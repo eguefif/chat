@@ -2,7 +2,7 @@ NAME = server
 CC = g++
 RM = rm -f
 
-_SRC = main.cpp server.cpp utils.cpp client.cpp protocol.cpp message.cpp channel.cpp
+_SRC = main.cpp server.cpp utils.cpp client.cpp connexion.cpp message.cpp channel.cpp
 _OBJ = $(_SRC:.cpp=.o)
 _INC = server.h
 SDIR = ./src/

@@ -183,17 +183,20 @@ void Server::process_name(std::vector<Client>::iterator aclient)
 
 	amessage = aclient->reading_queue.front();
 	aclient->set_name(trim(amessage.get_content()));
-	std::cout << "Adding " << aclient->get_name() << std::endl;
+	std::cout << "Naming " << aclient->get_name() << std::endl;
 }
 
 void Server::process_list(std::vector<Client>::iterator aclient)
 {
-std::string content = "";
+	std::string content = "Users\n";
 	int size;
 
 	for (auto aclient = clients.begin(); aclient != clients.end(); ++aclient)
 		if (aclient->get_sock() > 0)
 			content = content + aclient->get_name() + " ";
+	content += "\nChannels\n";
+	for (auto channel : channels)
+		content = content + channel.get_name() + " ";
 	Message message("list", content);
 	aclient->writing_queue.push(message);
 }
@@ -204,20 +207,45 @@ void Server::process_chat(std::vector<Client>::iterator aclient)
 	Message message_echo;
 
 	src_message = aclient->reading_queue.front();
-	Message dst_message(src_message.get_command_verbose(),
-			src_message.get_content(),
-			aclient->get_name().c_str());
-	message_echo = build_message_echo(src_message, aclient);
-	aclient->writing_queue.push(message_echo);
-	for (auto dst_client = clients.begin(); dst_client != clients.end(); ++dst_client)
+	if (is_message_to_channel(src_message.get_dst()))
 	{
-		if (dst_client->get_name() == src_message.get_dst().c_str())
+		for (auto channel = channels.begin(); channel != channels.end(); ++channel)
 		{
-			std::cout << "Adding message to " << dst_client->get_name() << std::endl;
-			dst_client->writing_queue.push(dst_message);
-			break;
+			if (channel->get_name() == src_message.get_dst())
+			{
+				std::string dst = aclient->get_name() + "(" + channel->get_name() + ")";
+				Message dst_message(src_message.get_command_verbose(),
+						src_message.get_content(),
+						dst.c_str());
+				channel->writing_queue.push(dst_message);
+			}
 		}
 	}
+	else
+	{
+		message_echo = build_message_echo(src_message, aclient);
+		aclient->writing_queue.push(message_echo);
+		Message dst_message(src_message.get_command_verbose(),
+				src_message.get_content(),
+				aclient->get_name().c_str());
+		for (auto dst_client = clients.begin(); dst_client != clients.end(); ++dst_client)
+		{
+			if (dst_client->get_name() == src_message.get_dst().c_str())
+			{
+				std::cout << "Adding message to " << dst_client->get_name() << std::endl;
+				dst_client->writing_queue.push(dst_message);
+				break;
+			}
+		}
+	}
+}
+
+bool Server::is_message_to_channel(std::string dst)
+{
+	for (auto channel : channels)
+		if (channel.get_name() == dst)
+			return true;
+	return false;
 }
 
 Message Server::build_message_echo(Message src, std::vector<Client>::iterator aclient)
@@ -250,7 +278,10 @@ void Server::process_leavechan(std::vector<Client>::iterator aclient)
 	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
 	{
 		if (achannel->get_name() == amessage.get_content_string())
+		{
 			achannel->remove_client(aclient->get_sock());
+			break;
+		}
 	}
 }
 
@@ -262,18 +293,22 @@ void Server::process_createchan(std::vector<Client>::iterator aclient)
 	add_channel(amessage.get_content(), aclient->get_sock());
 }
 
-void Server::process_deletechan(Message message)
-{
-	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
-		if (achannel->get_name() == message.get_content_string())
-			channels.erase(achannel);
-}
-
 void Server::add_channel(const char *name, int client)
 {
 	Channel channel(name, client);
 
+	std::cout << "Channel creation (" << name << ")" << std::endl;
 	channels.push_back(channel);
+}
+
+void Server::process_deletechan(Message message)
+{
+	for (auto achannel = channels.begin(); achannel != channels.end(); ++achannel)
+		if (achannel->get_name() == message.get_content_string())
+		{
+			channels.erase(achannel);
+			break;
+		}
 }
 
 void Server::on_write()
@@ -305,7 +340,7 @@ void Server::process_channel_message()
 {
 	for (auto channel = channels.begin(); channel != channels.end(); ++channel)
 	{
-		while(channel->writing_queue.empty())
+		while(!channel->writing_queue.empty())
 		{
 			Message amessage = channel->writing_queue.front();
 			channel->writing_queue.pop();
